@@ -1,0 +1,10 @@
+[package]
+name = "todo"
+version = "0.1.2"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.99"
+clap = { version = "4.5.41", features = ["derive"] }
+ron = "0.10.1"
+serde = { version = "1.0.219", features = ["derive"] }
