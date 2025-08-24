@@ -27,7 +27,7 @@ root directory of the project.
 ### Installing
 
 Installing the project should be similarly as simple, just run `cargo
-install` in the root directory of the project.
+install --path $PWD` in the root directory of the project.
 
 ## Usage
 
