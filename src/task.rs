@@ -1,5 +1,5 @@
-use std::fmt::{Formatter, Display, Error};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Error, Formatter};
 
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 pub struct Task {
@@ -45,7 +45,13 @@ impl Task {
 impl Display for Task {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let completed = if self.completed() { '☑' } else { '☐' };
-        write!(f, "{}  - {}: {}", completed, self.name(), self.description())
+        write!(
+            f,
+            "{}  - {}: {}",
+            completed,
+            self.name(),
+            self.description()
+        )
     }
 }
 

@@ -1,11 +1,16 @@
-use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(about, version, author, propagate_version = true)]
 pub struct Arguments {
-    #[arg(short, long, value_name = "FILE", help = "The location to sync tasks with")]
+    #[arg(
+        short,
+        long,
+        value_name = "FILE",
+        help = "The location to sync tasks with"
+    )]
     pub location: Option<PathBuf>,
 
     #[arg(short, long, help = "Sets the log level")]

@@ -1,19 +1,17 @@
-mod task;
 mod arguments;
-mod persistence;
-mod paths;
 mod error;
+mod paths;
+mod persistence;
+mod task;
 
-
-use std::path::PathBuf;
 use crate::arguments::Commands;
+use crate::paths::tasks_file;
 use crate::task::Task;
 use anyhow::Result;
 use clap::Parser;
 use log::LevelFilter;
-use simplelog::{TermLogger, Config, TerminalMode, ColorChoice};
-use crate::paths::tasks_file;
-
+use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
+use std::path::PathBuf;
 
 fn init_logging(level_filter: LevelFilter) -> Result<()> {
     Ok(TermLogger::init(

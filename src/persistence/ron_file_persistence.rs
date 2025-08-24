@@ -1,10 +1,9 @@
-use std::fs::OpenOptions;
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
 use crate::persistence::Persistence;
 use crate::task::Task;
 use anyhow::Result;
-
+use std::fs::OpenOptions;
+use std::io::{Read, Write};
+use std::path::{Path, PathBuf};
 
 pub struct RonFilePersistence {
     pub location: PathBuf,
@@ -51,10 +50,7 @@ impl Persistence for RonFilePersistence {
         }
 
         log::debug!("Reading tasks from: {}", self.location.display());
-        let mut file = OpenOptions::new()
-            .read(true)
-            .open(&self.location)?;
-
+        let mut file = OpenOptions::new().read(true).open(&self.location)?;
 
         log::trace!("Reading file to bytes.");
         let mut content = String::new();

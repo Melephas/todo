@@ -1,7 +1,7 @@
+use crate::error::NoHomeError;
+use anyhow::Result;
 use std::env::home_dir;
 use std::path::PathBuf;
-use anyhow::Result;
-use crate::error::NoHomeError;
 
 pub fn config_dir() -> Result<PathBuf> {
     let base = home_dir().ok_or(NoHomeError)?;
