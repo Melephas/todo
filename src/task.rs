@@ -4,7 +4,7 @@ use std::fmt::{Display, Error, Formatter};
 #[derive(Debug, Hash, Clone, Serialize, Deserialize)]
 pub struct Task {
     name: String,
-    description: String,
+    description: Option<String>,
     completed: bool,
 }
 
@@ -12,7 +12,7 @@ impl Task {
     pub fn new(name: &str, description: &str) -> Task {
         Task {
             name: name.into(),
-            description: description.into(),
+            description: Some(description.into()),
             completed: false,
         }
     }
@@ -20,7 +20,7 @@ impl Task {
     pub fn new_from_name(name: &str) -> Task {
         Task {
             name: String::from(name),
-            description: String::new(),
+            description: None,
             completed: false,
         }
     }
@@ -29,8 +29,8 @@ impl Task {
         &self.name
     }
 
-    pub fn description(&self) -> &str {
-        &self.description
+    pub fn description(&self) -> Option<&str> {
+        self.description.as_deref()
     }
 
     pub fn completed(&self) -> bool {
@@ -45,13 +45,18 @@ impl Task {
 impl Display for Task {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let completed = if self.completed() { '☑' } else { '☐' };
-        write!(
-            f,
-            "{}  - {}: {}",
-            completed,
-            self.name(),
-            self.description()
-        )
+
+        if let Some(description) = self.description() {
+            write!(
+                f,
+                "{}  - {}: {}",
+                completed,
+                self.name(),
+                description,
+            )
+        } else {
+            write!(f, "{}  - {}", completed, self.name())
+        }
     }
 }
 

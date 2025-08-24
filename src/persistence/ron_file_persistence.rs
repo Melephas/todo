@@ -20,18 +20,16 @@ impl RonFilePersistence {
 
 impl Persistence for RonFilePersistence {
     fn save(&self, data: &[Task]) -> Result<()> {
-        log::trace!("Checking if '{}' exists", self.location.display());
-        if !self.location.exists() {
-            log::debug!("No task file found at: {}", self.location.display());
-            return Ok(());
-        }
-
         log::debug!("Opening file: {}", self.location.display());
         let mut file = OpenOptions::new()
             .write(true)
             .create(true)
             .truncate(true)
-            .open(&self.location)?;
+            .open(&self.location)
+            .unwrap_or_else(|e| {
+                log::error!("Failed to open file: {}", e);
+                std::process::exit(1);
+            });
 
         log::trace!("Serializing tasks to bytes.");
         let content = ron::to_string(data)?;
