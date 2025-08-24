@@ -45,7 +45,7 @@ impl Task {
 impl Display for Task {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let completed = if self.completed() { '☑' } else { '☐' };
-        write!(f, "{} {} - {}", completed, self.name(), self.description())
+        write!(f, "{}  - {}: {}", completed, self.name(), self.description())
     }
 }
 
@@ -54,14 +54,12 @@ mod tests {
     const fn test_send() {
         const fn is_send<T: Send>() {}
         is_send::<super::Task>();
-        assert!(true)
     }
 
     #[test]
     const fn test_sync() {
         const fn is_sync<T: Sync>() {}
         is_sync::<super::Task>();
-        assert!(true)
     }
 
     #[test]

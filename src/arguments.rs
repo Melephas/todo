@@ -1,13 +1,15 @@
+use std::path::PathBuf;
 use clap::{Parser, Subcommand};
+use log::LevelFilter;
 
 #[derive(Parser)]
 #[command(about, version, author, propagate_version = true)]
 pub struct Arguments {
     #[arg(short, long, value_name = "FILE", help = "The location to sync tasks with")]
-    pub location: Option<String>,
+    pub location: Option<PathBuf>,
 
-    #[arg(short, long, help = "Prints more updates about the working of the program")]
-    pub verbose: bool,
+    #[arg(short, long, help = "Sets the log level")]
+    pub verbosity: Option<LevelFilter>,
 
     #[clap(subcommand)]
     pub command: Commands,
