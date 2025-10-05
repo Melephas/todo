@@ -1,17 +1,13 @@
 mod arguments;
-mod error;
-mod paths;
 mod persistence;
-mod task;
+mod tasks;
 
 use crate::arguments::Commands;
-use crate::paths::tasks_file;
-use crate::task::Task;
+use crate::tasks::NewTask;
 use anyhow::Result;
 use clap::Parser;
 use log::LevelFilter;
 use simplelog::{ColorChoice, Config, TermLogger, TerminalMode};
-use std::path::PathBuf;
 
 fn init_logging(level_filter: LevelFilter) -> Result<()> {
     Ok(TermLogger::init(
@@ -22,7 +18,10 @@ fn init_logging(level_filter: LevelFilter) -> Result<()> {
     )?)
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
+    dotenvy::dotenv().ok();
+
     let args = arguments::Arguments::parse();
 
     let verbosity = args.verbosity.unwrap_or(LevelFilter::Warn);
@@ -32,54 +31,77 @@ fn main() {
         std::process::exit(1);
     });
 
-    let location: PathBuf = args.location.unwrap_or_else(|| {
-        tasks_file().unwrap_or_else(|e| {
-            log::error!("Failed to get default config path: {}", e);
-            std::process::exit(1);
-        })
-    });
-
     log::debug!("Creating persistence layer");
-    let persistence = persistence::get_persistence(&location);
-
-    log::info!("Reading tasks from: {}", location.display());
-    let mut tasks = persistence.load().unwrap_or_else(|e| {
-        log::error!("Failed to load tasks: {}", e);
-        Vec::new()
-    });
+    let persistence = persistence::get_repository(
+        dotenvy::var("DATABASE_URL").unwrap_or_else(|_| {
+            log::error!("Failed to get database URL from environment");
+            std::process::exit(1);
+        }).as_str()
+    );
 
     match args.command {
         Commands::List => {
-            log::info!("Listing {} task(s):", tasks.len());
-            for (index, task) in tasks.iter().enumerate() {
-                println!("{}. {}", index, task);
+            log::info!("Getting tasks");
+            let tasks = persistence.get_all().await.unwrap_or_else(|e| {
+                log::error!("Failed to get tasks: {}", e);
+                std::process::exit(1);
+            });
+
+            log::debug!("Listing {} tasks(s):", tasks.len());
+            for task in tasks.iter() {
+                println!("{}. {}", task.id, task);
             }
 
             log::debug!("Done listing tasks, exiting early because no changes were made");
             std::process::exit(0);
         }
         Commands::Add { name, description } => {
-            log::info!("Adding new task");
-            if let Some(description) = description {
-                tasks.push(Task::new(&name, &description));
+            if description.is_none() {
+                log::info!("Adding new tasks with no description");
             } else {
-                tasks.push(Task::new_from_name(&name));
+                log::info!("Adding new tasks with description");
             }
+
+            let task = NewTask {
+                name,
+                description,
+            };
+
+            persistence.add(task)
+                       .await
+                       .unwrap_or_else(|e| {
+                           log::error!("Failed to add tasks: {}", e);
+                           std::process::exit(1);
+                       });
         }
         Commands::Remove { number } => {
-            log::info!("Removing task {}", number);
-            tasks.remove(number);
+            log::info!("Removing tasks {}", number);
+            persistence.remove(number)
+                       .await
+                       .unwrap_or_else(|e| {
+                           log::error!("Failed to remove tasks: {}", e);
+                           std::process::exit(1);
+                       });
         }
         Commands::Complete { number } => {
-            log::info!("Marking task {} as complete", number);
-            tasks[number].complete();
+            log::info!("Marking tasks {} as complete", number);
+            let mut task = persistence.get_by_id(number)
+                                      .await
+                                      .unwrap_or_else(|e| {
+                                          log::error!("Failed to get tasks: {}", e);
+                                          std::process::exit(1);
+                                      });
+
+            task.complete();
+
+            persistence.update(task)
+                       .await
+                       .unwrap_or_else(|e| {
+                           log::error!("Failed to update tasks: {}", e);
+                           std::process::exit(1);
+                       })
         }
     }
-
-    log::info!("Writing {} task(s) to: {}", tasks.len(), location.display());
-    persistence.save(&tasks).unwrap_or_else(|e| {
-        log::error!("Failed to save tasks: {}", e);
-    });
 
     log::info!("All done");
 }

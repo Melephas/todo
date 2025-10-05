@@ -1,13 +1,15 @@
 [package]
 name = "todo"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 
 [dependencies]
 anyhow = "1.0.99"
 clap = { version = "4.5.41", features = ["derive"] }
-ron = "0.10.1"
 serde = { version = "1.0.219", features = ["derive"] }
 log = "0.4.27"
 simplelog = "0.12.2"
-thiserror = "2.0.16"
+tokio = { version = "1.47.1", features = ["full"] }
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls"] }
+async-trait = "0.1.89"
+dotenvy = "0.15.7"

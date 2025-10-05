@@ -1,16 +1,22 @@
-mod ron_file_persistence;
+mod sql_repository;
 
-use crate::persistence::ron_file_persistence::RonFilePersistence;
-use crate::task::Task;
+use crate::persistence::sql_repository::SqlRepository;
+use crate::tasks::{NewTask, Task};
 use anyhow::Result;
-use std::path::Path;
+use async_trait::async_trait;
 
-pub trait Persistence {
-    fn save(&self, data: &[Task]) -> Result<()>;
-    fn load(&self) -> Result<Vec<Task>>;
+#[async_trait]
+pub trait Repository {
+    async fn get_all(&self) -> Result<Vec<Task>>;
+    async fn get_by_id(&self, id: i32) -> Result<Task>;
+    async fn add(&self, task: NewTask) -> Result<()>;
+    async fn remove(&self, id: i32) -> Result<()>;
+    async fn update(&self, task: Task) -> Result<()>;
 }
 
-pub fn get_persistence(location: impl AsRef<Path>) -> Box<dyn Persistence> {
-    log::trace!("Creating persistence (RonFilePersistence)");
-    Box::new(RonFilePersistence::new(location))
+pub fn get_repository(conn: &str) -> Box<dyn Repository + Sync> {
+    Box::new(
+        SqlRepository::new(conn)
+            .unwrap_or_else(|_| panic!("Failed to connect to database"))
+    )
 }

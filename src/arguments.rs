@@ -32,8 +32,8 @@ pub enum Commands {
     },
 
     #[clap(about = "Removes a task")]
-    Remove { number: usize },
+    Remove { number: i32 },
 
     #[clap(about = "Completes a task")]
-    Complete { number: usize },
+    Complete { number: i32 },
 }

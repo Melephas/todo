@@ -1,30 +1,18 @@
 use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 use std::fmt::{Display, Error, Formatter};
 
-#[derive(Debug, Hash, Clone, Serialize, Deserialize)]
+
+#[derive(Debug, Hash, Clone, Serialize, Deserialize, FromRow)]
 pub struct Task {
-    name: String,
-    description: Option<String>,
-    completed: bool,
+    pub id: i32,
+    pub name: String,
+    pub description: Option<String>,
+    pub completed: bool,
 }
 
+
 impl Task {
-    pub fn new(name: &str, description: &str) -> Task {
-        Task {
-            name: name.into(),
-            description: Some(description.into()),
-            completed: false,
-        }
-    }
-
-    pub fn new_from_name(name: &str) -> Task {
-        Task {
-            name: String::from(name),
-            description: None,
-            completed: false,
-        }
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
@@ -71,16 +59,5 @@ mod tests {
     const fn test_sync() {
         const fn is_sync<T: Sync>() {}
         is_sync::<super::Task>();
-    }
-
-    #[test]
-    fn test_display() {
-        let mut task = super::Task::new("test", "test");
-        let formatted_task = format!("{}", task);
-        assert_eq!(formatted_task, "☐ test - test");
-
-        task.complete();
-        let formatted_task = format!("{}", task);
-        assert_eq!(formatted_task, "☑ test - test");
     }
 }
