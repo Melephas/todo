@@ -3,16 +3,17 @@ use crate::tasks::{NewTask, Task};
 use anyhow::Result;
 use async_trait::async_trait;
 use sqlx::PgPool;
+use url::Url;
 
 pub struct SqlRepository {
     connection_pool: PgPool,
 }
 
 impl SqlRepository {
-    pub fn new(connection_string: &str) -> Result<Self> {
+    pub fn new(connection_string: &Url) -> Result<Self> {
         log::trace!("Creating new SqlRepository");
         Ok(SqlRepository {
-            connection_pool: PgPool::connect_lazy(connection_string)?,
+            connection_pool: PgPool::connect_lazy((&connection_string).as_ref())?,
         })
     }
 }

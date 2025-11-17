@@ -1,18 +1,9 @@
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
-use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(about, version, author, propagate_version = true)]
 pub struct Arguments {
-    #[arg(
-        short,
-        long,
-        value_name = "FILE",
-        help = "The location to sync tasks with"
-    )]
-    pub location: Option<PathBuf>,
-
     #[arg(short, long, help = "Sets the log level")]
     pub verbosity: Option<LevelFilter>,
 
@@ -20,9 +11,14 @@ pub struct Arguments {
     pub command: Commands,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, PartialEq, Debug)]
 pub enum Commands {
-    #[clap(about = "Lists all the tasks")]
+    #[clap(about = "Create a new configuration")]
+    Config {
+        storage: String,
+    },
+
+    #[clap(about = "Lists all tasks")]
     List,
 
     #[clap(about = "Adds a new task")]
