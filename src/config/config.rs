@@ -1,16 +1,13 @@
+use crate::config::storage_format::StorageFormat;
 use crate::error::NoConfigError;
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::fs::{File, OpenOptions};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use toml as ser_fmt;
 use url::Url;
-
-pub enum StorageFormat {
-    Postgres,
-    LocalStorage,
-}
 
 #[derive(Debug, Hash, Deserialize, Serialize, Clone)]
 pub struct Config {
@@ -91,6 +88,7 @@ impl Config {
     pub fn storage_format(&self) -> Result<StorageFormat> {
         match self.storage.scheme() {
             "postgresql" => Ok(StorageFormat::Postgres),
+            "sqlite" => Ok(StorageFormat::Sqlite),
             "file" => Ok(StorageFormat::LocalStorage),
             _ => Err(anyhow!("Unsupported format")),
         }
@@ -98,6 +96,12 @@ impl Config {
 
     pub fn storage(&self) -> &Url {
         &self.storage
+    }
+}
+
+impl Display for Config {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Storage: {}", self.storage)
     }
 }
 

@@ -1,9 +1,24 @@
-mod sql_repository;
 mod file_repository;
+
+
+// PostgreSQL feature
+#[cfg(feature = "postgres")]
+mod postgres_repository;
+
+#[cfg(feature = "postgres")]
+use postgres_repository::get_postgres_repository;
+
+
+// SQLite feature
+#[cfg(feature = "sqlite")]
+mod sqlite_repository;
+
+#[cfg(feature = "sqlite")]
+use sqlite_repository::get_sqlite_repository;
+
 
 use crate::config::{Config, StorageFormat};
 use crate::persistence::file_repository::FileRepository;
-use crate::persistence::sql_repository::SqlRepository;
 use crate::tasks::{NewTask, Task};
 use anyhow::Result;
 use async_trait::async_trait;
@@ -24,10 +39,10 @@ pub fn get_repository(config: &Config) -> Box<dyn Repository + Sync> {
         std::process::exit(1);
     }) {
         StorageFormat::Postgres => {
-            Box::new(
-                SqlRepository::new(config.storage())
-                    .unwrap_or_else(|_| panic!("Failed to connect to database"))
-            )
+            get_postgres_repository(config).unwrap_or_else(|_| panic!("Failed to connect to PostgreSQL database"))
+        }
+        StorageFormat::Sqlite => {
+            get_sqlite_repository(config).unwrap_or_else(|_| panic!("Failed to connect to SQLite database"))
         }
         StorageFormat::LocalStorage => {
             let storage_filepath = config.storage().to_file_path().unwrap_or_else(|_| {
@@ -35,12 +50,22 @@ pub fn get_repository(config: &Config) -> Box<dyn Repository + Sync> {
                 std::process::exit(1);
             });
 
-            Box::new(
-                FileRepository::new(storage_filepath).unwrap_or_else(|e| {
-                    log::error!("Failed to open file repository. ({})", e);
-                    std::process::exit(1);
-                })
-            )
+            Box::new(FileRepository::new(storage_filepath).unwrap_or_else(|e| {
+                log::error!("Failed to open file repository. ({})", e);
+                std::process::exit(1);
+            }))
         }
     }
+}
+
+
+#[cfg(not(feature = "postgres"))]
+fn get_postgres_repository(_config: &Config) -> Result<Box<dyn Repository + Sync>> {
+    Err(anyhow!("Feature \"postgres\" is not enabled, unable to connect to PostgreSQL."))
+}
+
+
+#[cfg(not(feature = "sqlite"))]
+fn get_sqlite_repository(_config: &Config) -> Result<Box<dyn Repository + Sync>> {
+    Err(anyhow!("Feature \"sqlite\" is not enabled, unable to connect to SQLite."))
 }

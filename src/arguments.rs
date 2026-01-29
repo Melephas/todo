@@ -13,9 +13,9 @@ pub struct Arguments {
 
 #[derive(Subcommand, PartialEq, Debug)]
 pub enum Commands {
-    #[clap(about = "Create a new configuration")]
+    #[clap(about = "Create a new configuration or display existing configuration")]
     Config {
-        storage: String,
+        storage: Option<String>,
     },
 
     #[clap(about = "Lists all tasks")]
