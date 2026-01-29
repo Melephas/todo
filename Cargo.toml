@@ -1,6 +1,6 @@
 [package]
 name = "todo"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 
 [features]
@@ -20,5 +20,5 @@ tokio = { version = "1.47.1", features = ["full"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls"] }
 async-trait = "0.1.89"
 ron = "0.12.0"
-url = "2.5.7"
+url = { version = "2.5.7", features = ["serde"] }
 toml = "0.9.8"
