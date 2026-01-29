@@ -2,6 +2,8 @@
 
 A humble to-do list manager written in Rust.
 
+[![build](https://github.com/Melephas/todo/actions/workflows/rust.yml/badge.svg)](https://github.com/Melephas/todo/actions/workflows/rust.yml)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running
