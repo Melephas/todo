@@ -140,29 +140,47 @@ async fn main() {
         // Generate a new configuration file that points to the given storage location.
         Commands::Config { storage: storage_url } => {
             log::trace!("Found instruction Commands::Config");
-            log::info!("Constructing a new configuration file");
-            let new_storage_url = Url::parse(&storage_url).unwrap_or_else(|e| {
-                log::error!("Failed to parse storage url: {}", e);
-                std::process::exit(1);
-            });
 
-            let new_config = config::Config::new_with_url(new_storage_url);
-
-            let config_file_location = config::Config::default_path()
-                .unwrap_or_else(|| {
-                    log::error!("Failed to get default path");
+            if let Some(url) = storage_url {
+                log::info!("Constructing a new configuration file");
+                let new_storage_url = Url::parse(&url).unwrap_or_else(|e| {
+                    log::error!("Failed to parse storage url: {}", e);
                     std::process::exit(1);
-                })
-                .join("config.toml");
+                });
 
-            log::debug!("Writing config to {}", config_file_location.to_string_lossy());
+                let new_config = config::Config::new_with_url(new_storage_url);
 
-            new_config.write_to_file(&config_file_location).unwrap_or_else(|e| {
-                log::error!("Failed to write config: {}", e);
-                std::process::exit(1);
-            });
+                let config_file_location = config::Config::default_path()
+                    .unwrap_or_else(|| {
+                        log::error!("Failed to get default path");
+                        std::process::exit(1);
+                    })
+                    .join("config.toml");
 
-            println!("Config file written to {}", config_file_location.to_string_lossy());
+                log::debug!("Writing config to {}", config_file_location.to_string_lossy());
+
+                new_config.write_to_file(&config_file_location).unwrap_or_else(|e| {
+                    log::error!("Failed to write config: {}", e);
+                    std::process::exit(1);
+                });
+
+                println!("Config file written to {}", config_file_location.to_string_lossy());
+            } else {
+                log::info!("No storage URL provided, displaying existing configuration");
+
+                let config_file_location = config::Config::default_path()
+                    .unwrap_or_else(|| {
+                        log::error!("Failed to get default path");
+                        std::process::exit(1);
+                    })
+                    .join("config.toml");
+
+                let config = config::Config::from_path(config_file_location).unwrap_or_else(|e| {
+                    log::error!("Failed to load config: {}", e);
+                    std::process::exit(1);
+                });
+                println!("{}", config);
+            }
         }
     }
 

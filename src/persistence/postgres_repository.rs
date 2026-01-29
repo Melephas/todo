@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::persistence::Repository;
 use crate::tasks::{NewTask, Task};
 use anyhow::Result;
@@ -5,21 +6,21 @@ use async_trait::async_trait;
 use sqlx::PgPool;
 use url::Url;
 
-pub struct SqlRepository {
+pub struct PostgresRepository {
     connection_pool: PgPool,
 }
 
-impl SqlRepository {
-    pub fn new(connection_string: &Url) -> Result<Self> {
-        log::trace!("Creating new SqlRepository");
-        Ok(SqlRepository {
-            connection_pool: PgPool::connect_lazy((&connection_string).as_ref())?,
+impl PostgresRepository {
+    pub fn new(connection_url: &Url) -> Result<Self> {
+        log::trace!("Creating new PostgresRepository with URL: {}", connection_url);
+        Ok(PostgresRepository {
+            connection_pool: PgPool::connect_lazy((&connection_url).as_ref())?,
         })
     }
 }
 
 #[async_trait]
-impl Repository for SqlRepository {
+impl Repository for PostgresRepository {
     async fn get_all(&self) -> Result<Vec<Task>> {
         log::trace!("Getting all tasks");
         let rows = sqlx::query_as::<_, Task>("select * from tasks order by id")
@@ -52,7 +53,7 @@ impl Repository for SqlRepository {
 
     async fn remove(&self, id: i32) -> Result<()> {
         log::trace!("Removing task with ID {}", id);
-        sqlx::query("drop from tasks where id = $1")
+        sqlx::query("delete from tasks where id = $1")
             .bind(id)
             .execute(&self.connection_pool)
             .await?;
@@ -72,4 +73,8 @@ impl Repository for SqlRepository {
 
         Ok(())
     }
+}
+
+pub fn get_postgres_repository(config: &Config) -> Result<Box<dyn Repository + Sync>> {
+    Ok(Box::from(PostgresRepository::new(config.storage())?))
 }
