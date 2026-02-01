@@ -1,31 +1,35 @@
+use bon::Builder;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use std::fmt::{Display, Error, Formatter};
 
-
-#[derive(Debug, Hash, Clone, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Hash, Clone, Serialize, Deserialize, FromRow, Builder)]
 pub struct Task {
-    pub id: i32,
-    pub name: String,
-    pub description: Option<String>,
-    pub completed: bool,
+    id: i32,
+    name: String,
+    description: Option<String>,
+    completed: bool,
 }
 
 
 impl Task {
-    pub fn name(&self) -> &str {
+    pub fn id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn name(&self) -> &String {
         &self.name
     }
 
-    pub fn description(&self) -> Option<&str> {
-        self.description.as_deref()
+    pub fn description(&self) -> Option<&String> {
+        self.description.as_ref()
     }
 
     pub fn completed(&self) -> bool {
         self.completed
     }
 
-    pub fn complete(&mut self) {
+    pub fn set_completed(&mut self) {
         self.completed = true;
     }
 }

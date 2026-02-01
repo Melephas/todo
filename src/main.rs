@@ -34,7 +34,7 @@ async fn main() {
     });
     log::debug!("Logging initialised with level: {}", logging_level);
 
-    // Build the path to the config file; The ability to specify and alternative config path has been removed.
+    // Build the path to the config file; The ability to specify an alternative config path has been removed.
     log::trace!("Getting default config path");
     let config_path = config::Config::default_path()
         .expect("Failed to get default path")
@@ -70,7 +70,7 @@ async fn main() {
 
             log::debug!("Listing {} tasks(s):", tasks.len());
             for task in tasks.iter() {
-                println!("{}. {}", task.id, task);
+                println!("{}. {}", task.id(), task);
             }
 
             log::debug!("Done listing tasks, exiting early because no changes were made");
@@ -88,10 +88,10 @@ async fn main() {
                 log::info!("Adding new tasks with description");
             }
 
-            let task = NewTask {
-                name,
-                description,
-            };
+            let task = NewTask::builder()
+                .name(name)
+                .maybe_description(description)
+                .build();
 
             persistence.add(task)
                        .await
@@ -128,7 +128,7 @@ async fn main() {
                                           std::process::exit(1);
                                       });
 
-            task.complete();
+            task.set_completed();
 
             persistence.update(task)
                        .await

@@ -43,8 +43,8 @@ impl Repository for PostgresRepository {
     async fn add(&self, task: NewTask) -> Result<()> {
         log::trace!("Adding a new task");
         sqlx::query("insert into tasks (name, description) values ($1, $2)")
-            .bind(task.name)
-            .bind(task.description)
+            .bind(task.name())
+            .bind(task.description())
             .execute(&self.connection_pool)
             .await?;
 
@@ -62,12 +62,12 @@ impl Repository for PostgresRepository {
     }
 
     async fn update(&self, task: Task) -> Result<()> {
-        log::trace!("Updating task with ID {}", task.id);
+        log::trace!("Updating task with ID {}", task.id());
         sqlx::query("update tasks set name = $1, description = $2, completed = $3 where id = $4")
-            .bind(task.name)
-            .bind(task.description)
-            .bind(task.completed)
-            .bind(task.id)
+            .bind(task.name())
+            .bind(task.description())
+            .bind(task.completed())
+            .bind(task.id())
             .execute(&self.connection_pool)
             .await?;
 

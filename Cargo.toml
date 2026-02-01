@@ -5,6 +5,7 @@ edition = "2024"
 
 [features]
 default = ["postgres", "sqlite"]
+full = ["postgres", "sqlite"]
 postgres = ["sqlx/postgres"]
 sqlite = ["sqlx/sqlite"]
 
@@ -22,3 +23,4 @@ async-trait = "0.1.89"
 ron = "0.12.0"
 url = { version = "2.5.7", features = ["serde"] }
 toml = "0.9.8"
+bon = "3.8.2"

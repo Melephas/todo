@@ -79,7 +79,7 @@ impl Repository for FileRepository {
         log::trace!("Getting task with id {}", id);
         let tasks = self.tasks.read().await;
         Ok(tasks.iter()
-                .find(|task| task.id == id)
+                .find(|task| task.id() == id)
                 .ok_or_else(|| anyhow!("No task with id {} found", id))?
             .clone()
         )
@@ -90,16 +90,17 @@ impl Repository for FileRepository {
         {
             let mut tasks = self.tasks.write().await;
             let new_id = tasks.iter()
-                              .map(|a| a.id)
+                              .map(|a| a.id())
                               .max()
                               .map(|max| max + 1)
                               .unwrap_or(1);
-            let new_task = Task {
-                id: new_id,
-                name: task.name,
-                description: task.description,
-                completed: false,
-            };
+
+            let new_task = Task::builder()
+                .id(new_id)
+                .name(task.name().clone())
+                .maybe_description(task.description().cloned())
+                .completed(false)
+                .build();
 
             tasks.push(new_task);
         }
@@ -111,19 +112,19 @@ impl Repository for FileRepository {
         log::trace!("Removing task with id {}", id);
         {
             let mut tasks = self.tasks.write().await;
-            tasks.retain(|task| task.id != id);
+            tasks.retain(|task| task.id() != id);
         }
         self.write_to_file().await?;
         Ok(())
     }
 
     async fn update(&self, task: Task) -> Result<()> {
-        log::trace!("Updating task with id {}", task.id);
+        log::trace!("Updating task with id {}", task.id());
         {
             let mut tasks = self.tasks.write().await;
             let index = tasks.iter()
-                             .position(|a| a.id == task.id)
-                             .ok_or_else(|| anyhow!("No task with id {} found", task.id))?;
+                             .position(|a| a.id() == task.id())
+                             .ok_or_else(|| anyhow!("No task with id {} found", task.id()))?;
             tasks[index] = task;
         }
         self.write_to_file().await?;
